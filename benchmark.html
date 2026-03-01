@@ -304,9 +304,10 @@
 
 <nav>
   <div class="nav-inner">
-    <div>
-      <img src="LOGOTIPO.svg" alt="Jitscore" style="height:16px;width:auto;opacity:0.9;display:block;margin-bottom:4px;">
-      <div class="nav-subtitle">Mobile App — Benchmark Visual</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:0.3px;">
+      <a href="index.html" style="color:var(--t-dim);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.75)'" onmouseout="this.style.color='rgba(255,255,255,0.30)'">Documentación</a>
+      <span style="color:var(--t-ghost);">→</span>
+      <span style="color:var(--t-mid);">Benchmark Visual</span>
     </div>
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="showTab('pantallas')">📱 Pantallas</button>
@@ -315,15 +316,6 @@
     </div>
   </div>
 </nav>
-
-<!-- BREADCRUMB -->
-<div style="border-bottom: 1px solid var(--line); position: relative; z-index: 1;">
-  <div style="max-width: 1100px; margin: 0 auto; padding: 0 32px; height: 36px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--t-dim); letter-spacing: 0.3px;">
-    <a href="index.html" style="color: var(--t-dim); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.75)'" onmouseout="this.style.color='rgba(255,255,255,0.30)'">Documentación</a>
-    <span style="color: var(--t-ghost);">→</span>
-    <span style="color: var(--t-mid);">Benchmark Visual</span>
-  </div>
-</div>
 
 <!-- ═══════════ TAB: PANTALLAS ═══════════ -->
 <div id="tab-pantallas" class="tab-content active">
