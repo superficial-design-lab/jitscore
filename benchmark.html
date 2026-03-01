@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jitscore Mobile App — Benchmark Visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:   #000000;
+    --mono: 'DM Mono', monospace;
+    --chip-bg:     rgba(255,255,255,0.08);
+    --chip-border: rgba(255,255,255,0.14);
+    --chip-text:   rgba(255,255,255,0.55);
+    --t-bright:  rgba(255,255,255,0.92);
+    --t-mid:     rgba(255,255,255,0.55);
+    --t-dim:     rgba(255,255,255,0.30);
+    --t-ghost:   rgba(255,255,255,0.15);
+    --s-card:    rgba(255,255,255,0.04);
+    --s-hover:   rgba(255,255,255,0.07);
+    --line:      rgba(255,255,255,0.08);
+    --line-hover:rgba(255,255,255,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--mono); background: var(--bg); color: #fff; }
+
+  /* subtle grid */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    background: #000;
+    border-bottom: 1px solid var(--line);
+    padding: 0;
+    height: 56px; position: sticky; top: 0; z-index: 100;
+  }
+  .nav-inner {
+    max-width: 1100px; margin: 0 auto; padding: 0 32px;
+    height: 100%; display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo { font-size: 13px; font-weight: 500; color: var(--t-bright); letter-spacing: 1px; }
+  .nav-subtitle { font-size: 11px; color: var(--t-dim); margin-top: 2px; letter-spacing: 0.5px; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    padding: 5px 14px; border-radius: 4px; font-size: 11px; font-weight: 400;
+    cursor: pointer; border: 1px solid transparent;
+    background: transparent; color: var(--t-mid);
+    font-family: var(--mono);
+    transition: all 0.2s; letter-spacing: 0.5px;
+  }
+  .nav-tab.active { background: var(--s-card); border-color: var(--line-hover); color: var(--t-bright); }
+  .nav-tab:hover:not(.active) { color: var(--t-bright); }
+
+  /* LAYOUT */
+  .page { padding: 48px 32px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+  .section-title { font-size: 22px; font-weight: 500; color: var(--t-bright); margin-bottom: 8px; letter-spacing: -0.5px; }
+  .section-desc { font-size: 12px; color: var(--t-mid); margin-bottom: 32px; line-height: 1.85; max-width: 600px; font-weight: 300; }
+  .screen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px; margin-bottom: 60px; }
+  .screen-grid.wide { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+
+  /* PHONE FRAME — keep realistic, only label styling changes */
+  .phone-wrapper { display: flex; flex-direction: column; align-items: center; }
+  .phone-label { font-size: 12px; font-weight: 500; color: var(--t-mid); margin-bottom: 8px; text-align: center; letter-spacing: 0.3px; }
+  .phone-sublabel { font-size: 10px; color: var(--t-dim); margin-bottom: 12px; text-align: center; letter-spacing: 0.5px; }
+  .phone { width: 260px; background: #1C1C1E; border-radius: 44px; padding: 12px; box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06); position: relative; }
+  .phone-notch { width: 90px; height: 28px; background: #1C1C1E; border-radius: 0 0 18px 18px; margin: 0 auto 4px; position: relative; z-index: 2; }
+  .phone-screen { background: white; border-radius: 32px; overflow: hidden; min-height: 500px; position: relative; }
+
+  /* STATUS BAR */
+  .status-bar { background: inherit; padding: 10px 16px 0; display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 600; color: #111827; }
+  .status-time { font-weight: 700; }
+  .status-icons { display: flex; gap: 4px; align-items: center; }
+  .status-icons span { font-size: 9px; }
+
+  /* REFERENCE CHIPS — single grey tone */
+  .ref-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+  .ref-chip {
+    background: var(--chip-bg); color: var(--chip-text);
+    font-size: 10px; padding: 3px 10px; border-radius: 3px;
+    font-weight: 400; border: 1px solid var(--chip-border);
+    letter-spacing: 0.2px;
+  }
+  .ref-chip.orange { background: var(--chip-bg); color: var(--chip-text); border-color: var(--chip-border); }
+  .ref-chip.green  { background: var(--chip-bg); color: var(--chip-text); border-color: var(--chip-border); }
+  .ref-chip.purple { background: var(--chip-bg); color: var(--chip-text); border-color: var(--chip-border); }
+
+  /* SECTION DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--line); margin: 48px 0; }
+  .section-block { margin-bottom: 56px; }
+
+  /* ── ALL PHONE-SCREEN INTERNALS: preserved as-is (keep product colors) ── */
+  /* SPLASH */
+  .splash { background: linear-gradient(160deg, #1A56DB 0%, #1E40AF 100%); min-height: 500px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
+  .splash-logo { font-size: 36px; font-weight: 900; color: white; letter-spacing: -1px; margin-bottom: 6px; }
+  .splash-tag { font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 48px; }
+  .input-field { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 14px 16px; color: white; font-size: 14px; width: 100%; margin-bottom: 12px; }
+  .btn-primary { background: white; color: #1A56DB; border: none; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 700; width: 100%; cursor: pointer; margin-bottom: 12px; }
+  .btn-link { color: rgba(255,255,255,0.7); font-size: 12px; text-align: center; }
+
+  /* HOME */
+  .home-header { background: linear-gradient(135deg, #1A56DB, #1E40AF); padding: 16px; color: white; }
+  .home-greeting { font-size: 13px; opacity: 0.8; }
+  .home-name { font-size: 18px; font-weight: 700; }
+  .home-body { background: #F8FAFF; }
+  .notif-badge { background: #EF4444; color: white; font-size: 10px; font-weight: 700; border-radius: 10px; padding: 2px 6px; margin-left: 6px; }
+  .notif-item { background: white; padding: 12px 14px; border-bottom: 1px solid #F3F4F6; display: flex; gap: 10px; align-items: flex-start; }
+  .notif-dot { width: 8px; height: 8px; background: #1A56DB; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .notif-dot.read { background: #E5E7EB; }
+  .notif-dot.red { background: #EF4444; }
+  .notif-dot.orange { background: #F59E0B; }
+  .notif-dot.green { background: #10B981; }
+  .notif-title { font-size: 12px; font-weight: 600; color: #111827; }
+  .notif-sub { font-size: 11px; color: #6B7280; margin-top: 2px; line-height: 1.4; }
+  .notif-time { font-size: 10px; color: #9CA3AF; white-space: nowrap; }
+  .emergency-btn { margin: 14px; background: linear-gradient(135deg, #EF4444, #DC2626); color: white; border: none; border-radius: 14px; padding: 14px; font-size: 13px; font-weight: 700; width: calc(100% - 28px); display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+  /* INCIDENCIA */
+  .inc-header { background: white; padding: 14px 16px; border-bottom: 1px solid #F3F4F6; }
+  .inc-back { font-size: 12px; color: #1A56DB; margin-bottom: 8px; }
+  .inc-title { font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 6px; }
+  .inc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+  .tag-red { background: #FEF2F2; color: #DC2626; }
+  .tag-orange { background: #FFFBEB; color: #D97706; }
+  .tag-blue { background: #EFF6FF; color: #1A56DB; }
+  .tag-green { background: #F0FDF4; color: #16A34A; }
+  .tag-gray { background: #F3F4F6; color: #4B5563; }
+  .inc-meta { padding: 12px 16px; background: #F8FAFF; border-bottom: 1px solid #F3F4F6; }
+  .meta-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+  .meta-label { color: #9CA3AF; }
+  .meta-val { color: #374151; font-weight: 500; }
+
+  /* TIMELINE */
+  .timeline { padding: 14px 16px; background: white; }
+  .tl-label { font-size: 11px; font-weight: 700; color: #6B7280; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 12px; }
+  .tl-item { display: flex; gap: 10px; margin-bottom: 14px; }
+  .tl-line { display: flex; flex-direction: column; align-items: center; }
+  .tl-dot { width: 10px; height: 10px; border-radius: 50%; background: #1A56DB; flex-shrink: 0; margin-top: 2px; }
+  .tl-dot.gray { background: #D1D5DB; }
+  .tl-dot.green { background: #10B981; }
+  .tl-dot.orange { background: #F59E0B; }
+  .tl-connector { width: 2px; flex: 1; background: #E5E7EB; margin-top: 2px; min-height: 20px; }
+  .tl-content { flex: 1; }
+  .tl-actor { font-size: 11px; font-weight: 600; color: #111827; }
+  .tl-action { font-size: 11px; color: #6B7280; margin-top: 2px; line-height: 1.4; }
+  .tl-time { font-size: 10px; color: #9CA3AF; margin-top: 2px; }
+
+  /* CHAT */
+  .chat-header { background: white; padding: 12px 16px; border-bottom: 1px solid #F3F4F6; display: flex; align-items: center; gap: 10px; }
+  .chat-avatar { width: 32px; height: 32px; background: #1A56DB; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; font-weight: 700; flex-shrink: 0; }
+  .chat-name { font-size: 13px; font-weight: 600; }
+  .chat-role { font-size: 11px; color: #6B7280; }
+  .chat-body { background: #F0F2F5; padding: 12px; min-height: 200px; }
+  .chat-msg { max-width: 80%; margin-bottom: 10px; }
+  .chat-msg.other .bubble { background: white; border-radius: 0 14px 14px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+  .chat-msg.me { margin-left: auto; }
+  .chat-msg.me .bubble { background: #1A56DB; color: white; border-radius: 14px 0 14px 14px; }
+  .bubble { padding: 9px 12px; font-size: 12px; line-height: 1.5; }
+  .msg-sender { font-size: 10px; font-weight: 600; color: #1A56DB; margin-bottom: 4px; }
+  .msg-time { font-size: 10px; color: #9CA3AF; margin-top: 4px; text-align: right; }
+  .chat-input-row { background: white; padding: 10px 14px; border-top: 1px solid #F3F4F6; display: flex; gap: 8px; align-items: center; }
+  .chat-input { flex: 1; background: #F3F4F6; border: none; border-radius: 20px; padding: 8px 14px; font-size: 12px; color: #374151; }
+  .chat-send { background: #1A56DB; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 14px; cursor: pointer; flex-shrink: 0; }
+
+  /* FILTERS */
+  .filter-header { background: white; padding: 12px 16px; border-bottom: 1px solid #F3F4F6; }
+  .filter-search { background: #F3F4F6; border: none; border-radius: 10px; padding: 9px 14px; font-size: 13px; width: 100%; color: #374151; }
+  .chips-row { display: flex; gap: 6px; padding: 10px 14px; overflow-x: auto; background: white; border-bottom: 1px solid #F3F4F6; }
+  .chip { background: #F3F4F6; color: #374151; font-size: 10px; font-weight: 600; padding: 5px 10px; border-radius: 20px; white-space: nowrap; cursor: pointer; border: 1.5px solid transparent; }
+  .chip.active { background: #EFF6FF; color: #1A56DB; border-color: #BFDBFE; }
+  .chip.red { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+  .chip.orange { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+  .chip.green { background: #F0FDF4; color: #15803D; border-color: #BBF7D0; }
+
+  /* ANALYTICS */
+  .analytics-header { background: linear-gradient(135deg, #1E40AF, #1A56DB); padding: 16px; color: white; }
+  .analytics-period { font-size: 12px; opacity: 0.75; }
+  .analytics-title { font-size: 16px; font-weight: 700; margin: 4px 0; }
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: #F8FAFF; }
+  .kpi-card { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .kpi-val { font-size: 22px; font-weight: 800; color: #111827; }
+  .kpi-label { font-size: 10px; color: #6B7280; margin-top: 2px; }
+  .kpi-trend { font-size: 10px; font-weight: 600; margin-top: 4px; }
+  .kpi-trend.up { color: #EF4444; }
+  .kpi-trend.down { color: #10B981; }
+  .kpi-trend.neutral { color: #6B7280; }
+  .kpi-card.blue { border-left: 3px solid #1A56DB; }
+  .kpi-card.orange { border-left: 3px solid #F59E0B; }
+  .kpi-card.green { border-left: 3px solid #10B981; }
+  .kpi-card.red { border-left: 3px solid #EF4444; }
+  .top-list { background: white; margin: 0 12px 12px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .top-list-header { background: #F8FAFF; padding: 10px 14px; font-size: 11px; font-weight: 700; color: #374151; border-bottom: 1px solid #F3F4F6; }
+  .top-list-item { padding: 10px 14px; border-bottom: 1px solid #F3F4F6; display: flex; align-items: center; gap: 10px; }
+  .top-rank { font-size: 12px; font-weight: 700; color: #9CA3AF; width: 16px; }
+  .top-name { font-size: 12px; font-weight: 600; color: #111827; flex: 1; }
+  .top-sub { font-size: 10px; color: #6B7280; }
+  .top-count { font-size: 13px; font-weight: 700; color: #1A56DB; }
+  .pdf-btn { margin: 0 12px 14px; background: white; border: 1.5px solid #1A56DB; color: #1A56DB; border-radius: 12px; padding: 12px; font-size: 12px; font-weight: 700; width: calc(100% - 24px); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { background: white; border-top: 1px solid #F3F4F6; padding: 8px 0 12px; display: flex; justify-content: space-around; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9px; color: #9CA3AF; position: relative; padding: 2px 10px; }
+  .nav-item.active { color: #1A56DB; }
+  .nav-icon { font-size: 18px; }
+  .nav-badge { position: absolute; top: -2px; right: 4px; background: #EF4444; color: white; font-size: 8px; font-weight: 700; border-radius: 8px; padding: 1px 4px; }
+
+  /* REFERENCE SECTION */
+  .ref-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
+  .ref-card {
+    background: var(--s-card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 24px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .ref-card:hover { background: var(--s-hover); border-color: var(--line-hover); }
+  .ref-name { font-size: 14px; font-weight: 500; color: var(--t-bright); margin-bottom: 8px; letter-spacing: 0.2px; }
+  .ref-desc { font-size: 12px; color: var(--t-mid); line-height: 1.75; margin-bottom: 16px; font-weight: 300; }
+  .ref-feature {
+    font-size: 10px; padding: 3px 10px; border-radius: 3px; margin-bottom: 5px;
+    background: var(--chip-bg); color: var(--chip-text);
+    border: 1px solid var(--chip-border); font-weight: 400;
+  }
+
+  /* TAB CONTENT */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* CALLOUT */
+  .callout {
+    background: var(--s-card); border-left: 2px solid rgba(255,255,255,0.2);
+    border-radius: 0 12px 12px 0; padding: 16px 20px; margin-bottom: 28px;
+  }
+  .callout-title { font-size: 11px; font-weight: 500; color: var(--t-dim); margin-bottom: 6px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .callout-text { font-size: 12px; color: var(--t-mid); line-height: 1.75; font-weight: 300; }
+
+  /* SECTION HEADINGS outside phone */
+  .section-heading {
+    font-size: 13px; font-weight: 500; color: var(--t-mid);
+    margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .section-heading::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+  /* FLOW CARDS */
+  .flow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .flow-card {
+    background: var(--s-card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 24px;
+  }
+  .flow-title { font-size: 13px; font-weight: 500; color: var(--t-bright); margin-bottom: 16px; }
+  .flow-step { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+  .flow-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--chip-bg); border: 1px solid var(--chip-border);
+    color: var(--chip-text); font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .flow-text { font-size: 12px; color: var(--t-mid); line-height: 1.7; font-weight: 300; }
+  .flow-meta { font-size: 10px; color: var(--t-dim); margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); letter-spacing: 0.5px; }
+
+  /* FOOTER */
+  .benchmark-footer {
+    margin-top: 80px; padding: 26px 32px 48px;
+    border-top: 1px solid var(--line);
+    max-width: 1100px; margin-left: auto; margin-right: auto;
+    display: flex; justify-content: space-between; align-items: center;
+    position: relative; z-index: 1;
+  }
+  .foot-logo { font-size: 11px; color: var(--t-dim); letter-spacing: 2px; }
+  .foot-note { font-size: 11px; color: var(--t-ghost); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .ref-grid { grid-template-columns: 1fr; }
+    .flow-grid { grid-template-columns: 1fr; }
+    nav { height: auto; }
+    .nav-inner { flex-direction: column; height: auto; padding: 12px; gap: 8px; }
+    .nav-tabs { flex-wrap: wrap; justify-content: center; }
+    .page { padding: 32px 20px; }
+  }
+
+  /* ANIMATIONS */
+  @keyframes up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .tab-content.active .phone-wrapper { animation: up 0.4s ease both; }
+  .tab-content.active .ref-card { animation: up 0.4s ease both; }
+  .tab-content.active .flow-card { animation: up 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div>
+      <img src="LOGOTIPO.svg" alt="Jitscore" style="height:16px;width:auto;opacity:0.9;display:block;margin-bottom:4px;">
+      <div class="nav-subtitle">Mobile App — Benchmark Visual</div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('pantallas')">📱 Pantallas</button>
+      <button class="nav-tab" onclick="showTab('referencias')">🔍 Referencias</button>
+      <button class="nav-tab" onclick="showTab('flujos')">🔄 Flujos</button>
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div style="border-bottom: 1px solid var(--line); position: relative; z-index: 1;">
+  <div style="max-width: 1100px; margin: 0 auto; padding: 0 32px; height: 36px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--t-dim); letter-spacing: 0.3px;">
+    <a href="index.html" style="color: var(--t-dim); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.75)'" onmouseout="this.style.color='rgba(255,255,255,0.30)'">Documentación</a>
+    <span style="color: var(--t-ghost);">→</span>
+    <span style="color: var(--t-mid);">Benchmark Visual</span>
+  </div>
+</div>
+
+<!-- ═══════════ TAB: PANTALLAS ═══════════ -->
+<div id="tab-pantallas" class="tab-content active">
+<div class="page">
+
+  <div class="section-title">Benchmark Visual — Pantallas Clave</div>
+  <p class="section-desc">Estas pantallas ilustran visualmente cómo se verían las funcionalidades principales de la app. Son un punto de partida para el diseño, no el diseño final. El objetivo es que los stakeholders puedan imaginar la experiencia antes de los wireframes.</p>
+
+  <div class="callout">
+    <div class="callout-title">Nota de uso</div>
+    <div class="callout-text">Estas pantallas son representaciones conceptuales de alta fidelidad. Los colores, tipografía y layout son referenciales. El diseño final se definirá en la Fase 1 de Diseño y Validación con wireframes y pruebas de usuario.</div>
+  </div>
+
+  <!-- BLOQUE 1: ACCESO Y HOGAR -->
+  <div class="section-block">
+    <div class="section-heading">01 — Acceso y Pantalla Principal</div>
+    <div class="ref-chips">
+      <span class="ref-chip">US-001 Login</span>
+      <span class="ref-chip">US-013 Centro de notificaciones</span>
+      <span class="ref-chip">US-040 Botón de emergencia</span>
+    </div>
+    <div class="screen-grid">
+
+      <!-- LOGIN -->
+      <div class="phone-wrapper">
+        <div class="phone-label">Inicio de Sesión</div>
+        <div class="phone-sublabel">US-001 · P0 Crítico</div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="splash">
+              <div class="splash-logo">Jitscore</div>
+              <div class="splash-tag">Seguimiento en tiempo real</div>
+              <input class="input-field" type="text" placeholder="✉  Correo electrónico" readonly>
+              <input class="input-field" type="password" placeholder="🔒  Contraseña" readonly>
+              <button class="btn-primary">Iniciar sesión</button>
+              <div class="btn-link">¿Olvidaste tu contraseña?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOME PADRE -->
+      <div class="phone-wrapper">
+        <div class="phone-label">Pantalla Principal · Padre</div>
+        <div class="phone-sublabel">US-013 · US-040 · P0 Crítico</div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+            <div class="home-header">
+              <div class="home-greeting">Buenos días,</div>
+              <div class="home-name">Carlos Fuentes <span style="font-size:12px;font-weight:400;opacity:0.8">· Padre</span></div>
+            </div>
+            <button class="emergency-btn">🚨 Llamada de Emergencia al Colegio</button>
+            <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:12px;font-weight:700;color:#111827;">Notificaciones <span class="notif-badge">3</span></div>
+              <div style="font-size:11px;color:#1A56DB;">Ver todas</div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-dot red"></div>
+              <div style="flex:1">
+                <div class="notif-title">⚠️ Incidencia — Santiago</div>
+                <div class="notif-sub">Conducta en clase · Coord. López asignado</div>
+              </div>
+              <div class="notif-time">hace 5m</div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-dot orange"></div>
+              <div style="flex:1">
+                <div class="notif-title">💬 Mensaje de Prof. Torres</div>
+                <div class="notif-sub">Valentina olvidó su cuaderno de tareas hoy</div>
+              </div>
+              <div class="notif-time">hace 1h</div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-dot read"></div>
+              <div style="flex:1">
+                <div class="notif-title">✅ Incidencia Resuelta</div>
+                <div class="notif-sub">El retraso de Santiago fue atendido</div>
+              </div>
+              <div class="notif-time">ayer</div>
+            </div>
+            <div class="bottom-nav">
+              <div class="nav-item active"><div class="nav-icon">🏠</div><div>Inicio</div></div>
+              <div class="nav-item"><div class="nav-icon">📋</div><div>Incidencias</div><div class="nav-badge">2</div></div>
+              <div class="nav-item"><div class="nav-icon">💬</div><div>Mensajes</div></div>
+              <div class="nav-item"><div class="nav-icon">👤</div><div>Perfil</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOME DOCENTE -->
+      <div class="phone-wrapper">
+        <div class="phone-label">Pantalla Principal · Docente</div>
+        <div class="phone-sublabel">US-021 · US-011 · P0 Crítico</div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+            <div class="home-header">
+              <div class="home-greeting">Buenos días,</div>
+              <div class="home-name">Sofía Delgado <span style="font-size:12px;font-weight:400;opacity:0.8">· Coordinadora</span></div>
+            </div>
+            <div style="padding:12px 14px;display:flex;gap:8px;">
+              <div style="flex:1;background:#FEF2F2;border-radius:12px;padding:12px;text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:#DC2626;">4</div>
+                <div style="font-size:10px;color:#6B7280;">Abiertas</div>
+              </div>
+              <div style="flex:1;background:#FFFBEB;border-radius:12px;padding:12px;text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:#D97706;">7</div>
+                <div style="font-size:10px;color:#6B7280;">En progreso</div>
+              </div>
+              <div style="flex:1;background:#F0FDF4;border-radius:12px;padding:12px;text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:#16A34A;">12</div>
+                <div style="font-size:10px;color:#6B7280;">Resueltas</div>
+              </div>
+            </div>
+            <div style="padding:0 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:12px;font-weight:700;">Incidencias recientes</div>
+              <div style="font-size:11px;color:#1A56DB;">+ Nueva</div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-dot red"></div>
+              <div style="flex:1">
+                <div class="notif-title">Diego Torres · 3°B</div>
+                <div class="notif-sub">🔴 Alta · Conducta · Sin encargado</div>
+              </div>
+              <div class="notif-time">hace 8m</div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-dot orange"></div>
+              <div style="flex:1">
+                <div class="notif-title">Isabella Morales · 2°A</div>
+                <div class="notif-sub">🟡 Media · Hábitos · En progreso</div>
+              </div>
+              <div class="notif-time">hace 2h</div>
+            </div>
+            <div class="bottom-nav">
+              <div class="nav-item active"><div class="nav-icon">🏠</div><div>Inicio</div></div>
+              <div class="nav-item"><div class="nav-icon">📋</div><div>Incidencias</div><div class="nav-badge">4</div></div>
+              <div class="nav-item"><div class="nav-icon">💬</div><div>Mensajes</div></div>
+              <div class="nav-item"><div class="nav-icon">📊</div><div>Analytics</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- BLOQUE 2: INCIDENCIAS -->
+  <div class="section-block">
+    <div class="section-heading">02 — Detalle de Incidencia y Timeline</div>
+    <div class="ref-chips">
+      <span class="ref-chip">US-022 Detalle con timeline</span>
+      <span class="ref-chip">US-023 Cambio de estatus</span>
+      <span class="ref-chip orange">Inspiración: ClickUp + Shopify</span>
+    </div>
+    <div class="screen-grid">
+
+      <!-- DETALLE INCIDENCIA -->
+      <div class="phone-wrapper">
+        <div class="phone-label">Detalle de Incidencia</div>
+        <div class="phone-sublabel">US-022 · P0 Crítico</div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><span>●●●</span><span>🔋</span></div></div>
+            <div class="inc-header">
+              <div class="inc-back">← Incidencias</div>
+              <div class="inc-title">Conducta disruptiva en clase de Español</div>
+              <div class="inc-tags">
+                <span class="tag tag-red">🔴 Alta prioridad</span>
+                <span class="tag tag-orange">Conducta</span>
+                <span class="tag tag-blue">En Progreso</span>
+              </div>
+            </div>
+            <div class="inc-meta">
+              <div class="meta-row"><span class="meta-label">Alumno</span><span class="meta-val">Santiago Fuentes · 4°B</span></div>
+              <div class="meta-row"><span class="meta-label">Encargado</span><span class="meta-val">Coord. López</span></div>
+              <div class="meta-row"><span class="meta-label">Creado</span><span class="meta-val">Hoy, 9:14am · Prof. Torres</span></div>
+            </div>
+            <div class="timeline">
+              <div class="tl-label">Actividad</div>
+              <div class="tl-item">
+                <div class="tl-line"><div class="tl-dot"></div><div class="tl-connector"></div></div>
+                <div class="tl-content">
+                  <div class="tl-actor">Prof. Torres · Profesor</div>
+                  <div class="tl-action">Creó la incidencia · Prioridad: Alta</div>
+                  <div class="tl-time">9:14 AM</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-line"><div class="tl-dot gray"></div><div class="tl-connector"></div></div>
+                <div class="tl-content">
+                  <div class="tl-actor">Sistema · Jitscore</div>
+                  <div class="tl-action">Push enviada a: Coord. López, Padre Fuentes</div>
+                  <div class="tl-time">9:14 AM</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-line"><div class="tl-dot orange"></div><div class="tl-connector"></div></div>
+                <div class="tl-content">
+                  <div class="tl-actor">Coord. López · Coordinadora</div>
+                  <div class="tl-action">Cambió estatus: Abierta → En Progreso</div>
+                  <div class="tl-time">9:31 AM</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-line"><div class="tl-dot green"></div></div>
+                <div class="tl-content">
+                  <div class="tl-actor">Carlos Fuentes · Padre</div>
+                  <div class="tl-action">Comentó: "Gracias por el aviso, hoy hablo con él"</div>
+                  <div class="tl-time">9:45 AM</div>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-nav">
+              <div class="nav-item"><div style="font-size:11px;color:#1A56DB;font-weight:600;">💬 Chat (3)</div></div>
+              <div class="nav-item"><div style="font-size:11px;color:#6B7280;font-weight:600;">📎 Adjuntos</div></div>
+              <div class="nav-item"><div style="font-size:11px;font-weight:700;color:white;background:#1A56DB;padding:5px 12px;border-radius:8px;">Cambiar estatus</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT INCIDENCIA -->
+      <div class="phone-wrapper">
+        <div class="phone-label">Chat de Incidencia</div>
+        <div class="phone-sublabel">US-030 · P0 Crítico</div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><span>●●●</span><span>🔋</span></div></div>
+            <div class="chat-header">
+              <div>
+                <div class="inc-back">← Detalle de incidencia</div>
+                <div style="font-size:13px;font-weight:700;color:#111827;">Chat · Santiago Fuentes</div>
+                <div style="font-size:11px;color:#6B7280;">3 participantes</div>
+              </div>
+            </div>
+            <div class="chat-body">
+              <div class="chat-msg other">
+                <div class="msg-sender">Prof. Torres · Profesor</div>
+                <div class="bubble">Santiago se negó a participar y perturbó la clase durante 20 minutos.</div>
+                <div class="msg-time">9:14 AM</div>
+              </div>
+              <div class="chat-msg other" style="margin-top:10px;">
+                <div class="msg-sender">Coord. López · Coordinadora</div>
+                <div class="bubble">Ya lo mandé llamar. Le voy a hablar y llamo a sus papás.</div>
+                <div class="msg-time">9:32 AM</div>
+              </div>
+              <div class="chat-msg me" style="margin-top:10px;">
+                <div class="bubble" style="color:white;">Gracias por el aviso. Esta noche hablo con él en casa.</div>
+                <div class="msg-time" style="color:rgba(255,255,255,0.7);">9:45 AM ✓✓</div>
+              </div>
+              <div class="chat-msg other" style="margin-top:10px;">
+                <div class="msg-sender">Coord. López · Coordinadora</div>
+                <div class="bubble">Perfecto. La situación ya está bajo control. Les mando actualización.</div>
+                <div class="msg-time">9:50 AM</div>
+              </div>
+            </div>
+            <div class="chat-input-row">
+              <input class="chat-input" placeholder="Escribe un mensaje..." readonly>
+              <button class="chat-send">➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="phone-wrapper">
+        <div class="phone-label">Filtros y Búsqueda</div>
+        <div class="phone-sublabel">US-014 · US-015 · P1 Importante</div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><span>●●●</span><span>🔋</span></div></div>
+            <div class="filter-header">
+              <div style="font-size:14px;font-weight:700;margin-bottom:10px;">Incidencias</div>
+              <input class="filter-search" placeholder="🔍 Buscar por alumno, tipo, descripción..." readonly>
+            </div>
+            <div class="chips-row">
+              <span class="chip red">⚠️ Muy grave</span>
+              <span class="chip orange">🔴 Grave</span>
+              <span class="chip active">⭐ Reconocimiento</span>
+              <span class="chip green">🏆 Premio</span>
+              <span class="chip">💬 Mensaje</span>
+              <span class="chip">📅 Reunión</span>
+            </div>
+            <div style="padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;background:#F8FAFF;border-bottom:1px solid #F3F4F6;">
+              <span class="chip active" style="font-size:11px;">Estatus: Abierta</span>
+              <span class="chip active" style="font-size:11px;">Sección: Primaria</span>
+              <span class="chip" style="font-size:11px;color:#EF4444;">✕ Limpiar</span>
+            </div>
+            <div style="padding:8px 14px;font-size:11px;color:#6B7280;">3 resultados encontrados</div>
+            <div class="notif-item">
+              <div class="notif-dot red"></div>
+              <div style="flex:1">
+                <div class="notif-title">⭐ Reconocimiento — Marco A.</div>
+                <div class="notif-sub">Primer lugar en concurso de ciencias · 3°A</div>
+              </div>
+              <div class="notif-time">hoy</div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-dot green"></div>
+              <div style="flex:1">
+                <div class="notif-title">⭐ Reconocimiento — Valeria T.</div>
+                <div class="notif-sub">Liderazgo positivo en proyecto de grupo · 5°B</div>
+              </div>
+              <div class="notif-time">ayer</div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-dot green"></div>
+              <div style="flex:1">
+                <div class="notif-title">⭐ Reconocimiento — Carlos M.</div>
+                <div class="notif-sub">Mejora notable en hábito de puntualidad · 4°A</div>
+              </div>
+              <div class="notif-time">hace 2d</div>
+            </div>
+            <div class="bottom-nav">
+              <div class="nav-item"><div class="nav-icon">🏠</div><div>Inicio</div></div>
+              <div class="nav-item active"><div class="nav-icon">📋</div><div>Incidencias</div></div>
+              <div class="nav-item"><div class="nav-icon">💬</div><div>Mensajes</div></div>
+              <div class="nav-item"><div class="nav-icon">📊</div><div>Analytics</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- BLOQUE 3: ANALYTICS -->
+  <div class="section-block">
+    <div class="section-heading">03 — Analytics · Visión Estratégica</div>
+    <div class="ref-chips">
+      <span class="ref-chip">US-050 Dashboard ejecutivo</span>
+      <span class="ref-chip">US-051 Top alumnos</span>
+      <span class="ref-chip">US-053 Descarga PDF</span>
+      <span class="ref-chip purple">Solo para Dueños</span>
+    </div>
+    <div class="screen-grid">
+
+      <div class="phone-wrapper">
+        <div class="phone-label">Visión Estratégica · Dashboard</div>
+        <div class="phone-sublabel">US-050 · US-051 · US-053 · P1</div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="status-bar" style="background:#1E40AF;color:white;"><span class="status-time" style="color:white;">9:41</span><div class="status-icons" style="color:white;"><span>●●●</span><span>🔋</span></div></div>
+            <div class="analytics-header">
+              <div class="analytics-period">Visión Estratégica · Ricardo Montoya</div>
+              <div class="analytics-title">Enero 2026</div>
+              <div style="font-size:11px;opacity:0.7;margin-top:4px;">← Feb 2026 · Último mes ›</div>
+            </div>
+            <div class="kpi-grid">
+              <div class="kpi-card blue">
+                <div class="kpi-val">142</div>
+                <div class="kpi-label">Total incidencias</div>
+                <div class="kpi-trend up">↑ +18% vs dic</div>
+              </div>
+              <div class="kpi-card orange">
+                <div class="kpi-val">67</div>
+                <div class="kpi-label">Hábitos</div>
+                <div class="kpi-trend neutral">→ estable</div>
+              </div>
+              <div class="kpi-card green">
+                <div class="kpi-val">43</div>
+                <div class="kpi-label">Reconocimientos</div>
+                <div class="kpi-trend down">↑ +12% vs dic</div>
+              </div>
+              <div class="kpi-card red">
+                <div class="kpi-val">32</div>
+                <div class="kpi-label">Conducta</div>
+                <div class="kpi-trend up">↑ +8% vs dic</div>
+              </div>
+            </div>
+            <div class="top-list">
+              <div class="top-list-header">Top 5 alumnos · Mayor número de incidencias</div>
+              <div class="top-list-item">
+                <div class="top-rank">1</div>
+                <div><div class="top-name">Santiago F.</div><div class="top-sub">4°B · Primaria</div></div>
+                <div class="top-count">9</div>
+              </div>
+              <div class="top-list-item" style="background:#F8FAFF;">
+                <div class="top-rank">2</div>
+                <div><div class="top-name">Diego T.</div><div class="top-sub">3°B · Primaria</div></div>
+                <div class="top-count">7</div>
+              </div>
+              <div class="top-list-item">
+                <div class="top-rank">3</div>
+                <div><div class="top-name">Marco A.</div><div class="top-sub">2°C · Primaria</div></div>
+                <div class="top-count">6</div>
+              </div>
+            </div>
+            <button class="pdf-btn">📄 Descargar Reporte Completo PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PSICOPEDAGOGÍA -->
+      <div class="phone-wrapper">
+        <div class="phone-label">Seguimiento Psicopedagógico</div>
+        <div class="phone-sublabel">US-052 · P1 Importante</div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="status-bar" style="background:#1E40AF;color:white;"><span class="status-time" style="color:white;">9:41</span><div class="status-icons" style="color:white;"><span>●●●</span><span>🔋</span></div></div>
+            <div class="analytics-header">
+              <div class="analytics-period">Visión Estratégica · Psicopedagogía</div>
+              <div class="analytics-title">Enero 2026</div>
+            </div>
+            <div class="kpi-grid">
+              <div class="kpi-card" style="border-left:3px solid #7C3AED;">
+                <div class="kpi-val">14</div>
+                <div class="kpi-label">Etiqueta activa</div>
+                <div class="kpi-trend" style="color:#7C3AED;">↑ +2 vs dic</div>
+              </div>
+              <div class="kpi-card" style="border-left:3px solid #0D9488;">
+                <div class="kpi-val">6</div>
+                <div class="kpi-label">Apoyo externo</div>
+                <div class="kpi-trend neutral">→ estable</div>
+              </div>
+              <div class="kpi-card" style="border-left:3px solid #F59E0B;">
+                <div class="kpi-val">28</div>
+                <div class="kpi-label">Con observaciones</div>
+                <div class="kpi-trend up">↑ +5 vs dic</div>
+              </div>
+              <div class="kpi-card" style="border-left:3px solid #10B981;">
+                <div class="kpi-val">11</div>
+                <div class="kpi-label">Reuniones psic.</div>
+                <div class="kpi-trend down">↑ +3 vs dic</div>
+              </div>
+            </div>
+            <div class="top-list">
+              <div class="top-list-header">Alumnos con seguimiento activo</div>
+              <div class="top-list-item">
+                <div style="width:28px;height:28px;background:#F5F3FF;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">IS</div>
+                <div><div class="top-name">Isabella M.</div><div class="top-sub">2°A · Etiqueta activa · Apoyo externo</div></div>
+                <span class="tag tag-orange" style="font-size:10px;">Activo</span>
+              </div>
+              <div class="top-list-item" style="background:#F8FAFF;">
+                <div style="width:28px;height:28px;background:#EFF6FF;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">AM</div>
+                <div><div class="top-name">Andrés M.</div><div class="top-sub">5°B · 4 observaciones</div></div>
+                <span class="tag tag-blue" style="font-size:10px;">Seguim.</span>
+              </div>
+            </div>
+            <button class="pdf-btn">📄 Descargar Reporte Completo PDF</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- end page -->
+</div><!-- end tab -->
+
+<!-- ═══════════ TAB: REFERENCIAS ═══════════ -->
+<div id="tab-referencias" class="tab-content">
+<div class="page">
+  <div class="section-title">Referencias de Diseño</div>
+  <p class="section-desc">Estas son las aplicaciones que inspiraron las decisiones de UX de Jitscore Mobile. Para cada una se identifica qué patrón específico se toma y cómo se adapta al contexto educativo.</p>
+
+  <div class="ref-grid">
+    <div class="ref-card" style="border-top:4px solid #7C3AED;">
+      <div class="ref-name" style="color:#7C3AED;">ClickUp</div>
+      <div class="ref-desc">Sistema de gestión de tareas y proyectos que introduce el concepto de épicas con subtareas, encargados, estatus y activity log cronológico.</div>
+      <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:#374151;">Qué tomamos:</div>
+      <div class="ref-feature" style="background:#F5F3FF;color:#7C3AED;">📋 Incidencias como "épicas" con subtareas y encargados</div>
+      <div class="ref-feature" style="background:#F5F3FF;color:#7C3AED;">📊 Estatus Kanban (Abierta / En progreso / Resuelta)</div>
+      <div class="ref-feature" style="background:#F5F3FF;color:#7C3AED;">📅 Activity log vertical con actor, acción y timestamp</div>
+      <div class="ref-feature" style="background:#F5F3FF;color:#7C3AED;">🔍 Filtros avanzados por múltiples dimensiones</div>
+    </div>
+    <div class="ref-card" style="border-top:4px solid #25D366;">
+      <div class="ref-name" style="color:#128C7E;">WhatsApp</div>
+      <div class="ref-desc">La app de mensajería más usada en México. Define el benchmark de simplicidad de comunicación que los padres ya conocen y con el que se sienten cómodos.</div>
+      <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:#374151;">Qué tomamos:</div>
+      <div class="ref-feature" style="background:#F0FDF4;color:#15803D;">💬 Chat dentro de cada incidencia con historial persistente</div>
+      <div class="ref-feature" style="background:#F0FDF4;color:#15803D;">📱 Mensajes directos 1:1 entre usuarios</div>
+      <div class="ref-feature" style="background:#F0FDF4;color:#15803D;">✓✓ Confirmación de lectura en mensajes</div>
+      <div class="ref-feature" style="background:#F0FDF4;color:#15803D;">🔔 Push notifications con preview de mensaje</div>
+    </div>
+    <div class="ref-card" style="border-top:4px solid #96BF48;">
+      <div class="ref-name" style="color:#5A8A1C;">Shopify</div>
+      <div class="ref-desc">Plataforma de e-commerce conocida por su timeline de órdenes — un registro visual y cronológico de todos los eventos de una transacción, con actor y tiempo exacto.</div>
+      <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:#374151;">Qué tomamos:</div>
+      <div class="ref-feature" style="background:#F0FDF4;color:#15803D;">📍 Timeline vertical de actividad por incidencia</div>
+      <div class="ref-feature" style="background:#F0FDF4;color:#15803D;">👤 Cada evento muestra quién lo hizo y cuándo</div>
+      <div class="ref-feature" style="background:#F0FDF4;color:#15803D;">🔒 Historial inmutable — no se puede borrar eventos</div>
+      <div class="ref-feature" style="background:#F0FDF4;color:#15803D;">📊 Cambios de estado con contexto narrativo</div>
+    </div>
+    <div class="ref-card" style="border-top:4px solid #FF6B35;">
+      <div class="ref-name" style="color:#FF6B35;">Scrum / Jira</div>
+      <div class="ref-desc">Marco de trabajo ágil que introduce la estructura mental de épica → tarea → responsable → sprint. Útil para que el equipo escolar piense en incidencias como proyectos de resolución.</div>
+      <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:#374151;">Qué tomamos:</div>
+      <div class="ref-feature" style="background:#FFF7ED;color:#C2410C;">🗂️ Incidencia = Épica (tiene historia, tareas y closure)</div>
+      <div class="ref-feature" style="background:#FFF7ED;color:#C2410C;">👥 Asignación de uno o más encargados</div>
+      <div class="ref-feature" style="background:#FFF7ED;color:#C2410C;">⏱️ Trazabilidad de tiempo de resolución</div>
+    </div>
+    <div class="ref-card" style="border-top:4px solid #1A56DB;">
+      <div class="ref-name" style="color:#1A56DB;">Apple Health / Fitness</div>
+      <div class="ref-desc">Referencia para el dashboard de Analytics — datos complejos presentados como tarjetas visuales con KPIs inmediatamente legibles, sin necesidad de interpretar gráficas complicadas.</div>
+      <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:#374151;">Qué tomamos:</div>
+      <div class="ref-feature" style="background:#EFF6FF;color:#1A56DB;">📊 KPI cards con número grande y tendencia</div>
+      <div class="ref-feature" style="background:#EFF6FF;color:#1A56DB;">🎨 Código de color consistente por categoría</div>
+      <div class="ref-feature" style="background:#EFF6FF;color:#1A56DB;">📅 Comparativa mes vs. mes anterior</div>
+    </div>
+    <div class="ref-card" style="border-top:4px solid #6B7280;">
+      <div class="ref-name" style="color:#6B7280;">Principio "3 pasos máximo"</div>
+      <div class="ref-desc">Cualquier acción crítica debe completarse en 3 pasos o menos. El padre de familia, como usuario de menor experiencia técnica, es el benchmark de simplicidad para toda decisión de UX.</div>
+      <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:#374151;">Flujo ideal para el padre:</div>
+      <div class="ref-feature" style="background:#F3F4F6;color:#374151;">1️⃣ Recibe push notification</div>
+      <div class="ref-feature" style="background:#F3F4F6;color:#374151;">2️⃣ Toca → abre detalle de incidencia</div>
+      <div class="ref-feature" style="background:#F3F4F6;color:#374151;">3️⃣ Lee o responde en el chat</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ TAB: FLUJOS ═══════════ -->
+<div id="tab-flujos" class="tab-content">
+<div class="page">
+  <div class="section-title">Flujos de Usuario</div>
+  <p class="section-desc">Los flujos principales de la app representados como secuencia de pantallas para entender la navegación entre vistas.</p>
+
+  <!-- FLUJO 1 -->
+  <div class="section-block">
+    <h2 style="font-size:17px;font-weight:700;margin-bottom:16px;color:#1A56DB;">Flujo 1 — Padre recibe notificación y responde</h2>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <div style="background:white;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;">
+        <div style="font-size:28px;margin-bottom:6px;">📲</div>
+        <div style="font-size:13px;font-weight:700;">Push llega</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Notif. con nombre del hijo + tipo</div>
+      </div>
+      <div style="font-size:24px;color:#D1D5DB;">→</div>
+      <div style="background:white;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;">
+        <div style="font-size:28px;margin-bottom:6px;">👆</div>
+        <div style="font-size:13px;font-weight:700;">Toca la push</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Abre directo al detalle</div>
+      </div>
+      <div style="font-size:24px;color:#D1D5DB;">→</div>
+      <div style="background:white;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;">
+        <div style="font-size:28px;margin-bottom:6px;">📋</div>
+        <div style="font-size:13px;font-weight:700;">Lee la incidencia</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Timeline + chat visibles</div>
+      </div>
+      <div style="font-size:24px;color:#D1D5DB;">→</div>
+      <div style="background:#EFF6FF;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;border:2px solid #1A56DB;">
+        <div style="font-size:28px;margin-bottom:6px;">💬</div>
+        <div style="font-size:13px;font-weight:700;color:#1A56DB;">Responde en chat</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">O llama si es urgente</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;background:#F0FDF4;border-radius:10px;padding:12px 16px;font-size:13px;color:#15803D;"><strong>3 pasos ✓</strong> — El padre puede actuar desde que recibe la notificación hasta responder en el chat en menos de 60 segundos.</div>
+  </div>
+
+  <!-- FLUJO 2 -->
+  <div class="section-block">
+    <h2 style="font-size:17px;font-weight:700;margin-bottom:16px;color:#0D9488;">Flujo 2 — Docente crea una incidencia</h2>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <div style="background:white;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;">
+        <div style="font-size:28px;margin-bottom:6px;">➕</div>
+        <div style="font-size:13px;font-weight:700;">Toca "Nueva"</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Botón desde pantalla principal</div>
+      </div>
+      <div style="font-size:24px;color:#D1D5DB;">→</div>
+      <div style="background:white;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;">
+        <div style="font-size:28px;margin-bottom:6px;">🎓</div>
+        <div style="font-size:13px;font-weight:700;">Selecciona alumno</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Filtrable por grupo/grado</div>
+      </div>
+      <div style="font-size:24px;color:#D1D5DB;">→</div>
+      <div style="background:white;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;">
+        <div style="font-size:28px;margin-bottom:6px;">📝</div>
+        <div style="font-size:13px;font-weight:700;">Llena el formulario</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Tipo, clasificación, descripción</div>
+      </div>
+      <div style="font-size:24px;color:#D1D5DB;">→</div>
+      <div style="background:white;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;">
+        <div style="font-size:28px;margin-bottom:6px;">👥</div>
+        <div style="font-size:13px;font-weight:700;">Asigna encargado</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Selección de docentes</div>
+      </div>
+      <div style="font-size:24px;color:#D1D5DB;">→</div>
+      <div style="background:#F0FDFA;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;border:2px solid #0D9488;">
+        <div style="font-size:28px;margin-bottom:6px;">🔔</div>
+        <div style="font-size:13px;font-weight:700;color:#0D9488;">Push enviada</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">A encargado + padres</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;background:#F0FDFA;border-radius:10px;padding:12px 16px;font-size:13px;color:#0D9488;"><strong>5 pasos, ~60 segundos ✓</strong> — El registro ocurre en el momento, en el lugar donde está el docente, sin necesidad de computadora.</div>
+  </div>
+
+  <!-- FLUJO 3 -->
+  <div class="section-block">
+    <h2 style="font-size:17px;font-weight:700;margin-bottom:16px;color:#C2410C;">Flujo 3 — Emergencia: padre llama al colegio</h2>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <div style="background:white;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;">
+        <div style="font-size:28px;margin-bottom:6px;">😰</div>
+        <div style="font-size:13px;font-weight:700;">Padre en pánico</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Situación urgente</div>
+      </div>
+      <div style="font-size:24px;color:#D1D5DB;">→</div>
+      <div style="background:#FEF2F2;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;border:2px solid #EF4444;">
+        <div style="font-size:28px;margin-bottom:6px;">🚨</div>
+        <div style="font-size:13px;font-weight:700;color:#DC2626;">Toca botón rojo</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Siempre visible en la app</div>
+      </div>
+      <div style="font-size:24px;color:#D1D5DB;">→</div>
+      <div style="background:white;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;">
+        <div style="font-size:28px;margin-bottom:6px;">✅</div>
+        <div style="font-size:13px;font-weight:700;">Confirmación 2s</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">Previene toques accidentales</div>
+      </div>
+      <div style="font-size:24px;color:#D1D5DB;">→</div>
+      <div style="background:white;border-radius:12px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;min-width:140px;">
+        <div style="font-size:28px;margin-bottom:6px;">📞</div>
+        <div style="font-size:13px;font-weight:700;">Llama directo</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:4px;">App de llamadas se abre</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;background:#FEF2F2;border-radius:10px;padding:12px 16px;font-size:13px;color:#DC2626;"><strong>2 pasos ✓</strong> — El camino más corto posible para una emergencia. Sin búsqueda de número, sin navegación.</div>
+  </div>
+
+</div>
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+<div class="benchmark-footer">
+  <div class="foot-logo">Superficial + Jitscore</div>
+  <div class="foot-note">Documentación confidencial · Uso interno · Fase 0 — Feb 2026</div>
+</div>
+</body>
+</html>
